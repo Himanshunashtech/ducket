@@ -118,40 +118,49 @@ class App {
   }
 
   setupMobileMenu() {
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const mobileMenu = document.querySelector('.mobile-menu');
+  console.log('Setting up mobile menu...'); // Add this for debugging
+  
+  const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+  const mobileMenu = document.querySelector('.mobile-menu');
+  
+  console.log('Mobile menu button:', mobileMenuBtn);
+  console.log('Mobile menu:', mobileMenu);
+  
+  if (mobileMenuBtn && mobileMenu) {
+    // Add click event to mobile menu button
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event from bubbling up
+      mobileMenu.classList.toggle('hidden');
+      this.toggleMenuIcon(mobileMenuBtn, mobileMenu.classList.contains('hidden'));
+    });
+
+    // Close menu when clicking on links
+    const mobileLinks = mobileMenu.querySelectorAll('a');
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        this.toggleMenuIcon(mobileMenuBtn, true);
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('header') && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        this.toggleMenuIcon(mobileMenuBtn, true);
+      }
+    });
+
+    // Prevent menu from closing when clicking inside it
+    mobileMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
     
-    if (mobileMenuBtn && mobileMenu) {
-      // Add click event to mobile menu button
-      mobileMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up
-        mobileMenu.classList.toggle('hidden');
-        this.toggleMenuIcon(mobileMenuBtn, mobileMenu.classList.contains('hidden'));
-      });
-
-      // Close menu when clicking on links
-      const mobileLinks = mobileMenu.querySelectorAll('a');
-      mobileLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden');
-          this.toggleMenuIcon(mobileMenuBtn, true);
-        });
-      });
-
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('header') && !mobileMenu.classList.contains('hidden')) {
-          mobileMenu.classList.add('hidden');
-          this.toggleMenuIcon(mobileMenuBtn, true);
-        }
-      });
-
-      // Prevent menu from closing when clicking inside it
-      mobileMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
+    console.log('Mobile menu event listeners added successfully');
+  } else {
+    console.error('Mobile menu elements not found');
   }
+}
 
   toggleMenuIcon(menuBtn, isHidden) {
     const icon = menuBtn.querySelector('svg');
