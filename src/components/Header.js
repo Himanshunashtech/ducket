@@ -41,7 +41,7 @@ export default function Header() {
             <a href="#" data-page="contact" class="block py-3 border-b border-gray-100">Contact</a>
             <a href="#" data-page="blog" class="block py-3 border-b border-gray-100">Blog</a>
             <div class="pt-4">
-              <a href="#" data-page="contact" class="block w-full text-center btn btn-primary py-3">Apply Now</a>
+            <a href="#" data-page="contact" class="nav-link block w-full text-center btn btn-primary py-3">Apply Now</a>
             </div>
           </div>
         </div>

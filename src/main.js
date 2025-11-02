@@ -28,16 +28,17 @@ import BlockchainCourse from './pages/courses/BlockchainCourse.js';
 import IoTCourse from './pages/courses/IoTCourse.js';
 import FullStackCourse from './pages/courses/FullStackCourse.js';
 import DataScienceCourse2 from './pages/courses/datascience.js';
+
 class App {
   constructor() {
     this.currentPage = 'home';
+    this.isMobileMenuOpen = false;
     this.init();
   }
 
   init() {
+    this.setupGlobalEventListeners();
     this.render();
-    this.setupNavigation();
-    this.setupMobileMenu();
     this.setupGSAPAnimations();
     this.setupPageSpecificFunctions();
   }
@@ -50,8 +51,8 @@ class App {
       ${Footer()}
     `;
     
-    // Re-initialize components after render
-    this.setupMobileMenu();
+    // Update mobile menu icon based on current state
+    this.updateMobileMenuIcon();
     this.setupPageSpecificFunctions();
   }
 
@@ -80,11 +81,94 @@ class App {
     }
   }
 
+  setupGlobalEventListeners() {
+    // Single event listener for all navigation
+    document.addEventListener('click', (e) => {
+      this.handleNavigation(e);
+      this.handleMobileMenu(e);
+    });
+  }
+
+  handleNavigation(e) {
+    // Handle all navigation links (desktop and mobile)
+    const navLink = e.target.closest('[data-page]');
+    if (navLink) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.currentPage = navLink.dataset.page;
+      this.closeMobileMenu();
+      this.render();
+      this.setupGSAPAnimations();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  handleMobileMenu(e) {
+    const mobileMenuBtn = e.target.closest('.mobile-menu-btn');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    // Handle mobile menu button click
+    if (mobileMenuBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.toggleMobileMenu();
+      return;
+    }
+    
+    // Close menu when clicking outside
+    if (this.isMobileMenuOpen && mobileMenu) {
+      if (!e.target.closest('.mobile-menu') && !e.target.closest('.mobile-menu-btn')) {
+        this.closeMobileMenu();
+      }
+    }
+  }
+
+  toggleMobileMenu() {
+    const mobileMenu = document.querySelector('.mobile-menu');
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (mobileMenu && mobileMenuBtn) {
+      this.isMobileMenuOpen = !this.isMobileMenuOpen;
+      mobileMenu.classList.toggle('hidden');
+      this.toggleMenuIcon(mobileMenuBtn, !this.isMobileMenuOpen);
+    }
+  }
+
+  closeMobileMenu() {
+    const mobileMenu = document.querySelector('.mobile-menu');
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (mobileMenu && mobileMenuBtn) {
+      this.isMobileMenuOpen = false;
+      mobileMenu.classList.add('hidden');
+      this.toggleMenuIcon(mobileMenuBtn, true);
+    }
+  }
+
+  updateMobileMenuIcon() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    if (mobileMenuBtn) {
+      this.toggleMenuIcon(mobileMenuBtn, !this.isMobileMenuOpen);
+    }
+  }
+
+  toggleMenuIcon(menuBtn, isHidden) {
+    const icon = menuBtn.querySelector('svg');
+    if (icon) {
+      if (isHidden) {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+      }
+    }
+  }
+
   setupPageSpecificFunctions() {
     // Setup contact form if on contact page
     if (this.currentPage === 'contact') {
       console.log('Setting up contact form...');
-      // Wait for DOM to be fully rendered
       setTimeout(() => {
         if (typeof setupContactForm === 'function') {
           setupContactForm();
@@ -92,82 +176,6 @@ class App {
           console.error('setupContactForm function not found');
         }
       }, 100);
-    }
-  }
-
-  setupNavigation() {
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('[data-page]')) {
-        e.preventDefault();
-        this.currentPage = e.target.dataset.page;
-        this.render();
-        this.setupGSAPAnimations();
-        window.scrollTo(0, 0);
-      }
-      
-      // Also check if the click is on a parent element with data-page
-      const card = e.target.closest('[data-page]');
-      if (card && card !== e.target) {
-        e.preventDefault();
-        this.currentPage = card.dataset.page;
-        this.render();
-        this.setupGSAPAnimations();
-        window.scrollTo(0, 0);
-      }
-    });
-  }
-
-  setupMobileMenu() {
-  console.log('Setting up mobile menu...'); // Add this for debugging
-  
-  const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-  const mobileMenu = document.querySelector('.mobile-menu');
-  
-  console.log('Mobile menu button:', mobileMenuBtn);
-  console.log('Mobile menu:', mobileMenu);
-  
-  if (mobileMenuBtn && mobileMenu) {
-    // Add click event to mobile menu button
-    mobileMenuBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent event from bubbling up
-      mobileMenu.classList.toggle('hidden');
-      this.toggleMenuIcon(mobileMenuBtn, mobileMenu.classList.contains('hidden'));
-    });
-
-    // Close menu when clicking on links
-    const mobileLinks = mobileMenu.querySelectorAll('a');
-    mobileLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.add('hidden');
-        this.toggleMenuIcon(mobileMenuBtn, true);
-      });
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('header') && !mobileMenu.classList.contains('hidden')) {
-        mobileMenu.classList.add('hidden');
-        this.toggleMenuIcon(mobileMenuBtn, true);
-      }
-    });
-
-    // Prevent menu from closing when clicking inside it
-    mobileMenu.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-    
-    console.log('Mobile menu event listeners added successfully');
-  } else {
-    console.error('Mobile menu elements not found');
-  }
-}
-
-  toggleMenuIcon(menuBtn, isHidden) {
-    const icon = menuBtn.querySelector('svg');
-    if (isHidden) {
-      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
-    } else {
-      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
     }
   }
 
